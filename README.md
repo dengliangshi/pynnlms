@@ -20,6 +20,7 @@ The configuration parameters for NNLM are as follows:
 | INPUT_UNIT<sup>3</sup>   | Unit of input, support word or character, 'W' for word and 'C' for character          | Str   |          |    W    |
 | ITERATIONS<sup>4</sup>   | Maximum number of iteration                                                           | Int   |          |    50   |
 | MIN_IMPROVE<sup>4</sup>  | Minimun rate of entropy improvement on validation data                                | Float |          |   1.003 | 
+| MODEL_NAME               | Specify a name for language model                                                     | Str   |          |    -    | 
 | OUTPUT_PATH              | The path under which output files will be saved                                       | Str   | &radic;  |    -    |
 | RANDOM_SEED              | Seed for random generator                                                             | Int   |          |    1    |
 | SENTENCE_END             | Mark for the end of a sentence                                                        | Str   |          |  <\s>   |
@@ -33,9 +34,13 @@ The configuration parameters for NNLM are as follows:
 
 *Notes:*
 *1. Activation function of hidden layer(s) could be one of `tanh`, `sigmoid`, `hard_sigmoid`, `relu` and `gaussian`.*
+
 *2. Hidden layer(s) can be one or several of `FNN`, `RNN`, `LSTM`, `BiRNN` and `BiLSTM`, and they should be given as a list of tuples containing each layer's name and its size, like [('RNN', 30), ('FNN', 20)]. Just a tuple is ok when there is only one hidden layer. The size of hidden layers should coincide with each other.*
+
 *3. For languages, such as English, French, whose words are separated by blank character, like white space, the `INPUT_UNITE` can be set to 'W' or 'C'. Other languages, like chinese, only `INPUT_UNITE = 'C'` does work.*
+
 *4. Training will terminate when either reaches the maximum number of iteration or that entropy improvement on validation data is less than minimum rate happens twice.*
+
 *5. If the number of words or characters learned from training data exceeds the specified size of vocabulary, the words or characters with low frequency will not be added into vocabulary. On the opposite, the size of vocabulary wil be reset to the number of learned words.*
 
 ## Usage
