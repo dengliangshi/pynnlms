@@ -1,0 +1,35 @@
+Model Name: FNNLM
+Training Files: .\input/train
+Validation Files: .\input/valid
+Test Files: .\input/test
+Output Path: .\output
+File Type: Text
+Vocabulary Size: 3722
+NUmber of Word Class: 100
+Size of Feature Vectors: 30
+Grammar Order: 5
+Initial Learning Rate: 0.01
+Regularization Parameter: 0.000001000
+Minimum Improvement rate: 1.00300
+Maximun Interation: 50
+Input Level: Word
+Mark for Start of Sentence: <s>
+Mark for End of Sentence: <\s>
+Mark for Words Out of Vocabulary: OOV
+Enable Direct Connections: False
+Enable Bias Terms: False
+Rate for Cutoff Learning Rate: 0
+Random Seed: 1
+Training Time: 2017-06-21 16:44:33
+NNLM: 01th iteration, 1 files, elapsed time is 15.55s, training entropy is 7.21, alpha is 0.01000.
+NNLM: 02th iteration, 1 files, elapsed time is 13.90s, training entropy is 6.63, alpha is 0.01000.
+NNLM: 03th iteration, 1 files, elapsed time is 15.94s, training entropy is 6.41, alpha is 0.01000.
+NNLM: 04th iteration, 1 files, elapsed time is 14.37s, training entropy is 6.27, alpha is 0.01000.
+NNLM: 05th iteration, 1 files, elapsed time is 13.95s, training entropy is 6.15, alpha is 0.01000.
+NNLM: 06th iteration, 1 files, elapsed time is 13.83s, training entropy is 6.05, alpha is 0.01000.
+NNLM: 07th iteration, 1 files, elapsed time is 14.02s, training entropy is 5.92, alpha is 0.00500.
+NNLM: 08th iteration, 1 files, elapsed time is 14.07s, training entropy is 5.85, alpha is 0.00250.
+NNLM: 09th iteration, 1 files, elapsed time is 14.04s, training entropy is 5.82, alpha is 0.00125.
+NNLM: 10th iteration, 1 files, elapsed time is 14.73s, training entropy is 5.80, alpha is 0.00063.
+Training Time: 2017-06-21 16:47:02
+NNLM: Test, 1 files, elapsed time is 0.55s, PPL is 75.78.
