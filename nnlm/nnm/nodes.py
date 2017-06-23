@@ -63,3 +63,19 @@ class Nodes(object):
         self.w += alpha * np.clip(self.dLdw, -15, 15) - beta * self.w
         self.v += alpha * np.clip(self.dLdv, -15, 15) - beta * self.v
         if self.en_bias: self.b += alpha * np.clip(self.dLdb, -15, 15) - beta * self.b
+
+    def store(self):
+        """Backup models' parameters.
+        """
+        self.ub = self.u.copy()
+        self.wb = self.w.copy()
+        self.vb = self.v.copy()
+        if self.en_bias: self.bb = self.b.copy()
+
+    def restore(self):
+        """Roll back to previous iteration.
+        """
+        self.u = self.ub.copy()
+        self.w = self.wb.copy()
+        self.v = self.vb.copy()
+        if self.en_bias: self.b = self.bb.copy()

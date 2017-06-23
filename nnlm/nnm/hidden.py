@@ -83,3 +83,15 @@ class Hidden(object):
         for index in xrange(self.layer_num-1, -1, -1):
             dLds = self.layers[index].update(dLds, alpha, beta)
         return dLds
+
+    def store(self):
+        """Backup models' parameters.
+        """
+        for index in xrange(self.layer_num):
+            self.layers[index].store()
+
+    def restore(self):
+        """Roll back to previous iteration.
+        """
+        for index in xrange(self.layer_num):
+            self.layers[index].restore()

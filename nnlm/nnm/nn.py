@@ -51,4 +51,14 @@ class NN(object):
         :Param shape: the matrix's size
         """
         return np.random.uniform(lower, upper, shape)
+
+    def store(self):
+        """Backup models' parameters.
+        """
+        self.nodes.store()
+
+    def restore(self):
+        """Roll back to previous iteration.
+        """
+        self.nodes.restore()
         

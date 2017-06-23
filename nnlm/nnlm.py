@@ -239,10 +239,42 @@ class NNLM(object):
         """
         return np.exp(x) / np.sum(np.exp(x))
 
+    def restore(self):
+        """Roll back to previous interation step.
+        """
+        self.C = self.Cb.copy()
+        self.V = self.Vb.copy()
+        self.Vc = self.Vcb.copy()
+        if self.en_direct:
+            self.M = self.Mb.copy()
+            self.Mc = self.Mcb.copy()
+        if self.en_bias:
+            self.d = self.db.copy()
+            self.dc = self.dcb.copy()
+        self.hidden.restore()
+
+    def store(self):
+        """backup the parameters of the whole model.
+        """
+        self.Cb = self.C.copy()
+        self.Vb = self.V.copy()
+        self.Vcb = self.Vc.copy()
+        if self.en_direct:
+            self.Mb = self.M.copy()
+            self.Mcb = self.Mc.copy()
+        if self.en_bias:
+            self.db = self.d.copy()
+            self.dcb = self.dc.copy()
+        self.hidden.store()
+
     def adjust(self, entropy):
         """Adjust the learning rate according to the entropy on validation data set.
         :Param entropy: the current entropy on validation data set.
         """
+        if entropy > self.pre_entropy:
+            self.restore()
+        else:
+            self.store()
         if entropy * self.min_improve > self.pre_entropy:
             if self.adjust_alpha: return True
             self.adjust_alpha = True
@@ -362,10 +394,11 @@ class NNLM(object):
             print log
             output.write(log+'\n')
             # run over validation data set
-            if self.adjust(self.valid()): break
+            if self.adjust(self.valid(output)): break
+            # backup the parameters of whole model
         output.close()
 
-    def valid(self):
+    def valid(self, output):
         """Adjust learning rate using validation data set.
         """
         self.logp = 0  # the logarithm probability of test data set
@@ -382,8 +415,10 @@ class NNLM(object):
                 self.run(sentence.strip())
             input_file.close()
         entropy = -self.logp/np.log(2)/float(self.word_num)
-        print 'NNLM: Validation, %d files, elapsed time is %.2fs, validation entropy is %.2f.' % (
+        log = 'NNLM: Validation, %d files, elapsed time is %.2fs, validation entropy is %.2f.' % (
             file_num, (time.clock()-begin), entropy)
+        print log
+        output.write(log+'\n')
         return entropy
 
     def test(self):

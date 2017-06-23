@@ -74,3 +74,15 @@ class BiRNN(object):
         dLdfx = self.frnn.update(dLdfs, alpha, beta)
         dLdbx = self.brnn.update(dLdbs, alpha, beta)
         return dLdfx + dLdbx
+
+    def store(self):
+        """Backup models' parameters.
+        """
+        self.frnn.store()
+        self.brnn.store()
+
+    def restore(self):
+        """Roll back to previous iteration.
+        """
+        self.frnn.restore()
+        self.brnn.restore()

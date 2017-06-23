@@ -133,3 +133,19 @@ class LSTM(NN):
             self.h[t] = self.acfun.compute(self.c[t])
             self.s[t] = np.clip(self.o[t] * self.h[t], -50, 50)
         return self.s[:-1]
+    
+    def store(self):
+        """Backup models' parameters.
+        """
+        self.igate.store()
+        self.fgate.store()
+        self.ogate.store()
+        super(LSTM, self).store()
+
+    def restore(self):
+        """Roll back to previous iteration.
+        """
+        self.igate.restore()
+        self.fgate.restore()
+        self.ogate.restore()
+        super(LSTM, self).restore()
