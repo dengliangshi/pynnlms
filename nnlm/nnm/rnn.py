@@ -26,8 +26,8 @@ class RNN(NN):
         :Param beta: regularization parameter
         """
         T =  len(self.x)
-        self.nodes.reset_error()
         dLdx = np.zeros((T, self.input_size))
+        self.nodes.reset_error()
         for t in xrange(T-1, -1, -1):
             dLdp = dLds[t] * self.acfun.derivate(self.s[t])
             self.nodes.dLdu += np.outer(dLdp, self.x[t])
@@ -46,7 +46,7 @@ class RNN(NN):
         self.x = x
         self.s = np.zeros((T+1, self.hidden_size))
         for t in xrange(T):
-            self.s[t] = np.dot(self.nodes.u, x[t]) + np.dot(self.nodes.w, self.s[t-1])
-            if self.en_bias: self.s[t] += self.nodes.b
-            self.s[t] = self.acfun.compute(np.clip(self.s[t], -50, 50))
+            self.s[t] = np.clip(np.dot(self.nodes.u, x[t])
+                + np.dot(self.nodes.w, self.s[t-1]) + self.nodes.b, -50, 50)
+            self.s[t] = self.acfun.compute(self.s[t])
         return self.s[:-1]

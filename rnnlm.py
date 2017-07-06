@@ -30,7 +30,7 @@ config = {
     "BETA": 1.0e-6,                                        # regularization parameter
     "ITERATIONS": 20,                                      # maximal iterations for training
     "MIN_IMPROVE": 1.003,                                  # the minimum rate of entropy improvement on validation data
-    "AC_FUN": 'tanh',                                      # activation function in hidden layer
+    "AC_FUN": 'sigmoid',                                   # activation function in hidden layer
     "EN_DIRECT": False,                                    # if using direct connection between input and output layer in RNN
     "EN_BIAS": False,                                      # if using bias in RNN
     "ALPHA_CUT": 0.5,                                      # ratio for the cutoff of alpha when small improvement found

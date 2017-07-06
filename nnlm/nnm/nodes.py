@@ -58,11 +58,11 @@ class Nodes(object):
         """Update nodes' parameters according to error gradient
         :Param alpha: learning rate
         :Param beta: regularization parameter
-        """    
-        self.u += alpha * np.clip(self.dLdu, -15, 15) - beta * self.u
-        self.w += alpha * np.clip(self.dLdw, -15, 15) - beta * self.w
-        self.v += alpha * np.clip(self.dLdv, -15, 15) - beta * self.v
-        if self.en_bias: self.b += alpha * np.clip(self.dLdb, -15, 15) - beta * self.b
+        """
+        self.u += alpha * self.dLdu - beta * self.u
+        self.w += alpha * self.dLdw - beta * self.w
+        self.v += alpha * self.dLdv - beta * self.v
+        if self.en_bias: self.b += alpha * self.dLdb - beta * self.b
 
     def store(self):
         """Backup models' parameters.

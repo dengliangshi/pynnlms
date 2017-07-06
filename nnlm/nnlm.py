@@ -170,6 +170,8 @@ class NNLM(object):
         # if the first hidden layer is feedforward nerual network
         if self.input_size != self.vector_dim: self.is_fnn = True
         # projection matrix, feature vectors for words, retrieved by word index
+        #self.C = self.random(-np.sqrt(1.0/self.vector_dim),
+        #    np.sqrt(1.0/self.vector_dim), (self.vocab_size, self.vector_dim))
         self.C = self.random(-0.1, 0.1, (self.vocab_size, self.vector_dim))
         word = self.vocab.get_word(self.unknown_word)
         self.C[word.index] = np.zeros(self.vector_dim)
@@ -178,6 +180,8 @@ class NNLM(object):
             np.sqrt(1.0/self.hidden_size), (self.vocab_size, self.hidden_size))
         self.Vc = self.random(-np.sqrt(1.0/self.hidden_size),
             np.sqrt(1.0/self.hidden_size), (self.class_size, self.hidden_size))
+        #self.V = self.random(-0.5, 0.5, (self.vocab_size, self.hidden_size))
+        #self.Vc = self.random(-0.5, 0.5, (self.class_size, self.hidden_size))
         # initialize weight for direct connections
         if self.en_direct:
             self.M = self.random(-np.sqrt(1.0/self.input_size),
@@ -196,7 +200,6 @@ class NNLM(object):
             self.dc = np.zeros(self.class_size)
         self.output_file = os.path.join(self.output_path, self.model_name)
         self.pre_save()
-        
 
     def pre_save(self):
         """Save the parameters of this language model.
@@ -274,6 +277,7 @@ class NNLM(object):
         if entropy > self.pre_entropy:
             self.restore()
         else:
+            # backup the parameters of whole model
             self.store()
         if entropy * self.min_improve > self.pre_entropy:
             if self.adjust_alpha: return True
@@ -339,6 +343,11 @@ class NNLM(object):
         T = len(self.words) - 1
         dLdx = np.zeros((T, self.input_size))
         dLds = np.zeros((T, self.hidden_size))
+        self.Vbt = self.V.copy()
+        self.Vcbt = self.Vc.copy()
+        if self.en_direct:
+            self.Mbt = self.M.copy()
+            self.Mcbt = self.Mc.copy()
         for t in xrange(T):
             word = self.words[t+1]
             dLdy = 0 - self.y[t]
@@ -348,24 +357,22 @@ class NNLM(object):
             start, end = self.vocab.get_range(word.cindex)
             dLdp = dLdy[start:end+1]
             if self.en_direct:
-                dLdx[t] += np.dot(self.M[start:end+1].T, dLdp)
-                dLdM = np.clip(np.outer(dLdp, self.x[t]), -15, 15)
-                self.M[start:end+1] += self.alpha * dLdM - self.beta * self.M[start:end+1]
-                dLdx[t] += np.dot(self.Mc.T, dLdc)
-                dLdMc = np.clip(np.outer(dLdc, self.x[t]), -15, 15)
-                self.Mc += self.alpha * dLdMc - self.beta * self.Mc
+                dLdx[t] += np.dot(self.Mbt[start:end+1].T, dLdp)
+                self.M[start:end+1] += self.alpha * np.outer(dLdp, self.x[t]) - self.beta * self.Mbt[start:end+1]
+                dLdx[t] += np.dot(self.Mcbt.T, dLdc)
+                self.Mc += self.alpha * np.outer(dLdc, self.x[t]) - self.beta * self.Mcbt
             if self.en_bias:
-                self.d[start:end+1] += self.alpha * np.clip(dLdp, -15, 15) - self.beta * self.d[start:end+1]
-                self.dc += self.alpha * np.clip(dLdc, -15, 15) - self.beta * self.dc
-            dLds[t] += np.dot(self.V[start:end+1].T, dLdp)
-            dLds[t] += np.dot(self.Vc.T, dLdc)
-            self.V[start:end+1] += self.alpha * np.clip(np.outer(dLdp, self.s[t]), -15, 15) - self.beta * self.V[start:end+1]
-            self.Vc += self.alpha * np.clip(np.outer(dLdc, self.s[t]), -15, 15) - self.beta * self.Vc
+                self.d[start:end+1] += self.alpha * dLdp - self.beta * self.d[start:end+1]
+                self.dc += self.alpha * dLdc - self.beta * self.dc
+            dLds[t] += np.dot(self.Vbt[start:end+1].T, dLdp)
+            dLds[t] += np.dot(self.Vcbt.T, dLdc)
+            self.V[start:end+1] += self.alpha * np.outer(dLdp, self.s[t]) - self.beta * self.Vbt[start:end+1]
+            self.Vc += self.alpha * np.outer(dLdc, self.s[t]) - self.beta * self.Vcbt
         dLdx += self.hidden.update(dLds, self.alpha, self.beta)
         if self.is_fnn: dLdx = self.reshape(dLdx)
         for t in xrange(T):
             index = self.words[t].index
-            self.C[index] += np.clip(dLdx[t], -15, 15) * self.alpha - self.C[index] * self.beta
+            self.C[index] += dLdx[t] * self.alpha - self.C[index] * self.beta
 
     def train(self):
         """Train this language model.
@@ -395,7 +402,6 @@ class NNLM(object):
             output.write(log+'\n')
             # run over validation data set
             if self.adjust(self.valid(output)): break
-            # backup the parameters of whole model
         output.close()
 
     def valid(self, output):

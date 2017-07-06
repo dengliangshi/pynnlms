@@ -42,8 +42,9 @@ class FNN(NN):
         """
         T = len(x)
         self.x = x
-        self.s = np.zeros((T+1, self.hidden_size))
+        self.s = np.zeros((T, self.hidden_size))
         for t in xrange(T):
-            self.s[t] = np.dot(self.nodes.u, x[t]) + self.nodes.b
+            self.s[t] = np.dot(self.nodes.u, x[t])
+            if self.en_bias: self.s[t] += self.nodes.b
             self.s[t] = self.acfun.compute(np.clip(self.s[t], -50, 50))
         return self.s
