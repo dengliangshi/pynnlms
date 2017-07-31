@@ -1,6 +1,6 @@
 # Neural Network Language Models
 
-This is a Neural Networl Language Models (NNLMs) toolkit which supports Feed-forward Neural Network (FNN), Recurrent Neural Network (RNN), Long Short Term Memory (LSTM) RNN, Bidirectional RNN and Bidirectional LSTM. Neural network language models with multible hidden layers also can be built with this toolkit, and the architecture of hidden layers can be different. A class-based method is adopted in this toolkit to speed up the trainin and running of neural network language model.
+This is a Neural Networl Language Models (NNLMs) toolkit which supports Feed-forward Neural Network (FNN), Recurrent Neural Network (RNN), Long Short Term Memory (LSTM) RNN, Bidirectional RNN and Bidirectional LSTM. Neural network language models with multible hidden layers also can be built with this toolkit, and the architecture of hidden layers can be different. A class-based method is adopted in this toolkit to speed up the trainin and running of neural network language model. This toolkit has been rewritten using C++ which can be find [here](https://github.com/dengliangshi/cnnlms).
 
 ## Configuration
 The configuration parameters for NNLM are as follows:
