@@ -15,12 +15,12 @@ from acfun import AcFun
 # --------------------------------------------------------Global Strings----------------------------------------------------
 """
 Recurrent Neural Network built here can be represented as:
-i(t) = sigmoid(Uix(t) + Wis(t-1) + Vic(t-1) + bi)
-f(t) = sigmoid(Ufx(t) + Wfs(t-1) + Vfc(t-1) + bf)
-o(t) = sigmoid(Uox(t) + Wos(t-1) + Voc(t-1) + b0)
-g(t) = tanh(Ux(t) + Ws(t-1) + b)
+i(t) = G(Ui*x(t) + Wi*s(t-1) + Vi*c(t-1) + bi)
+f(t) = G(Uf*x(t) + Wf*s(t-1) + Vf*c(t-1) + bf)
+g(t) = F(U*x(t) + W*s(t-1) + b)
 c(t) = f(t) * c(t-1) + i(t) * g(t)
-h(t) = tanh(c(t))
+o(t) = G(Uo*x(t) + Wo*s(t-1) + Vo*c(t) + b0)
+h(t) = F(c(t))
 s(t) = o(t) * h(t)
 """
 
@@ -55,10 +55,18 @@ class LSTM(NN):
         dLdx = np.zeros((T, self.input_size))
         dLdc = np.zeros(self.hidden_size)
         for t in xrange(T-1, -1, -1):
+            dLdpo = dLds[t] * self.h[t] * self.gatefun.derivate(self.o[t])
+            # parameters for output gate
+            self.ogate.dLdu += np.outer(dLdpo, self.x[t])
+            self.ogate.dLdw += np.outer(dLdpo, self.s[t-1])
+            self.ogate.dLdv += np.outer(dLdpo, self.c[t-1])
+            dLds[t-1] += np.dot(self.ogate.w.T, dLdpo)
+            dLdx[t] += np.dot(self.ogate.u.T, dLdpo)
+            dLdc += np.dot(self.ogate.v.T, dLdpo)
+
             dLdc += dLds[t] * self.o[t] * self.acfun.derivate(self.h[t])
             dLdpi = dLdc * self.g[t] * self.gatefun.derivate(self.i[t])
             dLdpf = dLdc * self.c[t-1] * self.gatefun.derivate(self.f[t])
-            dLdpo = dLds[t] * self.h[t] * self.gatefun.derivate(self.o[t])
             dLdpg = dLdc * self.i[t] * self.acfun.derivate(self.g[t])
             dLdc = dLdc * self.f[t]
             # parameters for nodes in hidden layer
@@ -80,13 +88,6 @@ class LSTM(NN):
             dLds[t-1] += np.dot(self.fgate.w.T, dLdpf)
             dLdx[t] += np.dot(self.fgate.u.T, dLdpf)
             dLdc += np.dot(self.fgate.v.T, dLdpf)
-            # parameters for output gate
-            self.ogate.dLdu += np.outer(dLdpo, self.x[t])
-            self.ogate.dLdw += np.outer(dLdpo, self.s[t-1])
-            self.ogate.dLdv += np.outer(dLdpo, self.c[t-1])
-            dLds[t-1] += np.dot(self.ogate.w.T, dLdpo)
-            dLdx[t] += np.dot(self.ogate.u.T, dLdpo)
-            dLdc += np.dot(self.ogate.v.T, dLdpo)
             if self.en_bias:
                 self.nodes.dLdb += dLdpg
                 self.igate.dLdb += dLdpi
@@ -121,15 +122,15 @@ class LSTM(NN):
             self.f[t] = self.gatefun.compute(np.dot(self.fgate.u, x[t])
                 + np.dot(self.fgate.w, self.s[t-1])
                 + np.dot(self.fgate.v, self.c[t-1]) + self.fgate.b)
-            # output gate
-            self.o[t] = self.gatefun.compute(np.dot(self.ogate.u, x[t])
-                + np.dot(self.ogate.w, self.s[t-1])
-                + np.dot(self.ogate.v, self.c[t-1]) + self.ogate.b)
             # current hidden node state
             self.g[t] = self.acfun.compute(np.dot(self.nodes.u, x[t]) + 
                 np.dot(self.nodes.w, self.s[t-1]) + self.nodes.b)
             # internal memoery
             self.c[t] = self.f[t] * self.c[t-1] + self.i[t] * self.g[t]
+            # output gate
+            self.o[t] = self.gatefun.compute(np.dot(self.ogate.u, x[t])
+                + np.dot(self.ogate.w, self.s[t-1])
+                + np.dot(self.ogate.v, self.c[t]) + self.ogate.b)
             self.h[t] = self.acfun.compute(self.c[t])
             self.s[t] = np.clip(self.o[t] * self.h[t], -50, 50)
         return self.s[:-1]
